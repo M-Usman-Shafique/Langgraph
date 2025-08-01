@@ -4,9 +4,9 @@ from langchain_core.messages import BaseMessage, HumanMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph.message import add_messages
 
-#==============================================================================
-    # Single message chatbot workflow, because executing the program only once.
-#==============================================================================
+#==================================================================================================
+    # No memory chatbot, because although we are appending messages into the state but after the complete execution of workflow, the previous state gets reset.
+#==================================================================================================
 class ChatState(TypedDict):
     # add_message reducer to append msgs into the list
     messages: Annotated[list[BaseMessage], add_messages]
@@ -34,9 +34,12 @@ graph.add_edge('chat_node', END)
 
 chatbot = graph.compile()
 
-initial_state = {
-    'messages': [HumanMessage(content='What is the capital of india')]
-}
+while True:
+    user_message = input("Type here: ")
+    print("User:", user_message)
 
-chatbot.invoke(initial_state)['messages'][-1].content
+    if user_message.strip().lower() in ['exit', 'quit', 'bye']:
+        break
 
+    response = chatbot.invoke({ 'messages': [HumanMessage(content=user_message)]})
+    print(response['messages'][-1].content)
